@@ -4,6 +4,10 @@ import json
 class BookServerHandler(BaseHTTPRequestHandler):
     books = []  # Lista para armazenar os livros
 
+    def _read_books(self):
+        with open("db.json", "r") as json_file:
+            return json.load(json_file)
+
     def do_POST(self):
         print("Recebendo solicitação para adicionar livro...")
         content_length = int(self.headers['Content-Length'])
@@ -24,6 +28,7 @@ class BookServerHandler(BaseHTTPRequestHandler):
                 print("Erro: Dados do livro incompletos")
                 return
 
+            self.books = self._read_books()
             # Adiciona o livro à lista
             self.books.append({
                 "title": book_title,
@@ -31,6 +36,9 @@ class BookServerHandler(BaseHTTPRequestHandler):
                 "year": book_year
             })
             print(f"Livro adicionado: {data}")
+
+            with open("db.json", mode="w", encoding="utf-8") as file:
+                json.dump(self.books, file, ensure_ascii=False, indent=4)
 
             # Enviando resposta de sucesso
             self.send_response(200)
